@@ -1,0 +1,21 @@
+{
+    "name": "vendor/lab4",
+    "autoload": {
+        "classmap": [
+            "Models/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Abdelrahmansherif207",
+            "email": "abdelrahmansherif207@gmail.com"
+        }
+    ],
+    "files": [
+        "config.php"
+    ],
+    "require": {
+        "illuminate/database": "^10.0",
+        "illuminate/support": "^10.0"
+    }
+}
