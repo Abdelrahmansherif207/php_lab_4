@@ -4,13 +4,23 @@ require 'vendor/autoload.php';
 $db = new MySQLHandler();
 $items = [];
 $itemDetails = null;
+$totalRecords = 0;
+$pages = 0;
 
 if($db->connect()) {  
     try {
         if (isset($_GET['id'])) {
             $itemDetails = $db->get_record_by_id($_GET['id'], 'id');
+        } elseif (isset($_GET['search']) && !empty(trim($_GET['search']))) {
+            $searchTerm = trim($_GET['search']);
+            $items = $db->search_data($searchTerm); 
+
         } else {
-            $items = $db->get_data();
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $start = ($page - 1) * __RECORDS_PER_PAGE__;
+            $items = $db->get_data([],$start);
+            $pages = $db->get_pages();
+
         }
     } finally {
         $db->disconnect();
@@ -226,11 +236,43 @@ if($db->connect()) {
                 margin: 5% auto;
             }
         }
+
+        .search-bar {
+           outline: none;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-bar input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .search-bar button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Glasses Shop</h1>
+
+        <div class="search-bar">
+            <form method="GET" action="index.php">
+                <input type="text" name="search" placeholder="Search for glasses..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                <button type="submit">Search</button>
+            </form>
+        </div>
         
         <div class="glasses-grid">
             <?php foreach ($items as $item): ?>
@@ -244,8 +286,15 @@ if($db->connect()) {
                     </div>
                 </a>
             <?php endforeach; ?>
+        
         </div>
-
+        <div class="pages">
+                <?php
+                for ($i = 1; $i <= $pages; $i++) {
+                    echo "<a href='index.php?page=$i'>$i</a> ";
+                }
+                ?>
+            </div>
         <?php if ($itemDetails): ?>
         <div id="itemModal" class="modal" style="display: block;">
             <div class="modal-content">

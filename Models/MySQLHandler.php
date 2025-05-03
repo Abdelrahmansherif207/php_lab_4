@@ -4,6 +4,9 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class MySQLHandler implements DbHandler {
     private $capsule;
+    private $items = array();
+    private $totalRecords = 0;
+    private $pages = 0;
 
     public function __construct() {
         $this->capsule = new Capsule;
@@ -45,7 +48,10 @@ class MySQLHandler implements DbHandler {
 
     public function get_data($fields = array(), $start = 0) {
         $query = Capsule::table('items');
-        
+        $this->items = $query->get()->toArray();
+        $this->totalRecords = count($this->items);
+        $this->pages = ceil($this->totalRecords / __RECORDS_PER_PAGE__);
+    
         if (!empty($fields)) {
             $query->select($fields);
         }
@@ -60,5 +66,17 @@ class MySQLHandler implements DbHandler {
         return Capsule::table('items')
                      ->where($primary_key, $id)
                      ->first();
+    }
+
+    public function search_data($searchTerm) {
+        $query = Capsule::table('items')
+                     ->where('product_name', 'LIKE', '%' . $searchTerm . '%')
+                     ->get()
+                     ->toArray();
+        
+        return $query;
+    }
+    public function get_pages() {
+        return $this->pages;
     }
 } 
